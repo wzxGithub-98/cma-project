@@ -46,3 +46,6 @@ pnpm build
 ```sh
 pnpm lint
 ```
+
+### dist deploy 
+npx gh-pages -d dist -b gh-pages -r https://github.com/wzxGithub-98/cma-project.git
