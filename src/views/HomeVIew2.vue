@@ -18,12 +18,6 @@ const clkFileName = ref('')
 const cmaFileList = ref<File[]>([])
 const clkFileList = ref<File[]>([])
 const loading = ref(false)
-const selectedValue = ref(1)
-const showPicker = ref(false)
-const pickerColumns = Array.from({ length: 100 }, (_, i) => ({
-  text: String(i + 1),
-  value: i + 1,
-}))
 
 const cmaCount = computed(() => cmaData.value.length)
 const clkCount = computed(() => clkData.value.length)
@@ -35,11 +29,7 @@ const uniqueObjArr = (list: ClkItem[], key: keyof ClkItem): ClkItem[] => {
   })
 }
 
-const readExcel = (
-  file: File,
-  sheetIndex: number,
-  callback: (data: Record<string, unknown>[]) => void
-) => {
+const readExcel = (file: File, sheetIndex: number, callback: (data: Record<string, unknown>[]) => void) => {
   const reader = new FileReader()
   reader.onload = (e: ProgressEvent<FileReader>) => {
     const data = e.target?.result
@@ -55,8 +45,8 @@ const readExcel = (
   reader.readAsArrayBuffer(file)
 }
 
-const onCma = (file: File | File[] | any) => {
-  const cmaFile = Array.isArray(file) ? file[0]?.file : file?.file
+const onCma = (file: File | File[]) => {
+  const cmaFile = Array.isArray(file) ? file[0] : file
   if (!cmaFile) return
   cmaFileName.value = cmaFile.name
   cmaData.value = []
@@ -73,12 +63,12 @@ const onCma = (file: File | File[] | any) => {
   })
 }
 
-const onClk = (file: File | File[] | any) => {
-  const clkFile = Array.isArray(file) ? file[0]?.file : file?.file
+const onClk = (file: File | File[]) => {
+  const clkFile = Array.isArray(file) ? file[0] : file
   if (!clkFile) return
   clkFileName.value = clkFile.name
   clkData.value = []
-  readExcel(clkFile, selectedValue.value - 1, (data) => {
+  readExcel(clkFile, 0, (data) => {
     const rawList: ClkItem[] = []
     data.forEach((item, index) => {
       const codeVal = item['__EMPTY_2'] as string | undefined
@@ -142,41 +132,11 @@ const onClick = () => {
     loading.value = false
   }
 }
-const onReset = () => {
-  cmaData.value = []
-  clkData.value = []
-  cmaFileName.value = ''
-  clkFileName.value = ''
-  cmaFileList.value = []
-  clkFileList.value = []
-  selectedValue.value = 1
-  showToast('已重置')
-}
-const onPickerConfirm = ({ selectedValues }: { selectedValues: number[] }) => {
-  selectedValue.value = selectedValues[0]
-  showPicker.value = false
-}
 </script>
 
 <template>
   <div class="home-view">
     <van-nav-bar title="CMA标准比对工具" />
-    <van-cell-group inset title="参数设置">
-      <van-field
-        v-model="selectedValue"
-        label="选择编号"
-        placeholder="请选择"
-        readonly
-        is-link
-        input-align="right"
-        @click="showPicker = true"
-      />
-    </van-cell-group>
-    <van-notice-bar
-      wrapable
-      :scrollable="false"
-      text="说明：选择【莱恩CMA资质认定项目表】中第几个sheet表进行比对，默认选择第1个sheet表。"
-    />
 
     <van-cell-group inset title="数据源">
       <van-cell title="CMA能力项目库" :label="cmaFileName || '请上传CMA能力项目库Excel文件'">
@@ -196,10 +156,7 @@ const onPickerConfirm = ({ selectedValues }: { selectedValues: number[] }) => {
         </template>
       </van-cell>
 
-      <van-cell
-        title="莱恩CMA资质认定项目表"
-        :label="clkFileName || '请上传莱恩CMA资质能力认证项目表'"
-      >
+      <van-cell title="莱恩CMA资质认定项目表" :label="clkFileName || '请上传莱恩CMA资质能力认证项目表'">
         <template #value>
           <van-tag v-if="clkCount > 0" type="success" round>{{ clkCount }} 条</van-tag>
         </template>
@@ -229,8 +186,6 @@ const onPickerConfirm = ({ selectedValues }: { selectedValues: number[] }) => {
       >
         开始比对
       </van-button>
-      <br />
-      <van-button type="default" block round @click="onReset">重置</van-button>
     </div>
 
     <van-notice-bar
@@ -238,13 +193,6 @@ const onPickerConfirm = ({ selectedValues }: { selectedValues: number[] }) => {
       :scrollable="false"
       text="说明：上传CMA能力项目库和莱恩CMA资质认定项目表后，点击「开始比对」将自动比较两个文件中的标准编号差异，并下载差异结果为JSON文件。"
     />
-    <van-popup v-model:show="showPicker" round position="bottom">
-      <van-picker
-        :columns="pickerColumns"
-        @confirm="onPickerConfirm"
-        @cancel="showPicker = false"
-      />
-    </van-popup>
   </div>
 </template>
 
@@ -252,6 +200,7 @@ const onPickerConfirm = ({ selectedValues }: { selectedValues: number[] }) => {
 .home-view {
   min-height: 100vh;
   background-color: #f7f8fa;
+
 }
 
 .action-bar {
