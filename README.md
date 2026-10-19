@@ -67,5 +67,5 @@ pnpm lint
 方法二：
 # 安装gh-pages插件
 1. npm install -g gh-pages  
-# 将dist目录内容推送到远程仓库，其远程仓库的分支名一定要为gh-pages，下面代码的第一个gh-pages为远程分支名，第二个gh-pages为自定义分支名
+# 将dist目录内容推送到远程仓库，其远程仓库的分支名一定要为gh-pages，下面代码的第一个gh-pages为gh-pages插件，第二个gh-pages为远程分支名
 2. npx gh-pages -d dist -b gh-pages -r https://github.com/wzxGithub-98/cma-project.git
