@@ -62,10 +62,10 @@ const onCma = (file: File | File[] | any) => {
   cmaData.value = []
   readExcel(cmaFile, 0, (data) => {
     data.forEach((item) => {
-      const objName = '标准编号(含年号)'
-      const codeValue = item[objName] as string | undefined
+      const codeValue = item['标准编号(含年号)'] as string | undefined
       const remarkValue = item['备注'] as string | undefined
-      if (codeValue && !remarkValue?.includes('废止')) {
+      const scopeValue = item['领域'] as string | undefined
+      if (codeValue && !remarkValue?.includes('废止') && scopeValue === '产品质量检验') {
         cmaData.value.push(codeValue)
       }
     })
@@ -80,16 +80,18 @@ const onClk = (file: File | File[] | any) => {
   clkData.value = []
   readExcel(clkFile, selectedValue.value - 1, (data) => {
     const rawList: ClkItem[] = []
+    console.log('data',data);
     data.forEach((item, index) => {
       const codeVal = item['__EMPTY_2'] as string | undefined
       const inLibVal = item['__EMPTY_6'] as string | undefined
-      if (index >= 2 && codeVal && inLibVal) {
+      if (index >= 3 && codeVal && inLibVal) {
         rawList.push({ id: index, code: codeVal, inLib: inLibVal })
       }
     })
     clkData.value = [...uniqueObjArr(rawList, 'code')].map((item, idx) => {
-      return { id: idx + 1, ...item, code: item.code, inLib: item.inLib }
+      return { id: idx + 1, ...item, code: item.code.replace(/\s/g, ''), inLib: item.inLib }
     })
+    console.log(clkData.value)
     showToast(`莱恩文件已加载，共${clkData.value.length}条`)
   })
 }
@@ -122,7 +124,7 @@ const getDiffUrl = (diff: DiffItem[]) => {
   URL.revokeObjectURL(url)
 }
 
-const onClick = () => {
+const onCompare = () => {
   if (!canCompare.value) {
     showNotify({ type: 'warning', message: '请先上传两个文件' })
     return
@@ -225,7 +227,7 @@ const onPickerConfirm = ({ selectedValues }: { selectedValues: number[] }) => {
         :disabled="!canCompare"
         :loading="loading"
         loading-text="比对中..."
-        @click="onClick"
+        @click="onCompare"
       >
         开始比对
       </van-button>
